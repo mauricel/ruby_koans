@@ -13,12 +13,36 @@ require File.expand_path(File.dirname(__FILE__) + '/neo')
 # of the Proxy class is given in the AboutProxyObjectProject koan.
 
 class Proxy
+  attr_reader :messages
+
   def initialize(target_object)
     @object = target_object
-    # ADD MORE CODE HERE
+    @messages = []
   end
 
-  # WRITE CODE HERE
+  def called?(symbol)
+    @messages.any? { |msg| msg == symbol }
+  end
+
+  def number_of_times_called(symbol)
+    @messages.count{ |s| s == symbol }
+  end
+
+  # this feels really really dirty and i fucking hate this 
+  # implementation because it appears to violate
+  # the Liskov substitution principle, but whatever 
+  def method_missing(symbol, *args, &block)
+    if @object.respond_to?(symbol, *args, &block) 
+      messages << symbol
+      return @object.send(symbol, *args, &block)
+    end
+    super
+  end
+
+  def respond_to_missing?(symbol, *args, &block)
+    @object.respond_to(symbol, *args, &block)
+  end
+
 end
 
 # The proxy object should pass the following Koan:
